@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "outDir": "./dist/",
+        "esModuleInterop": true,
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "baseUrl": ".",
+        "typeRoots": ["./node_modules/@types", "./@types"],
+        "strict": true,
+        "declaration": true,
+        "paths": {
+            "@core/*": ["core/*"],
+            "*": ["@types/*"]
+        }
+    },
+    "ts-node": {}
+}
