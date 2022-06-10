@@ -112,6 +112,7 @@ OOP
 트렁크
 문
 범퍼
+
 ..
 
 작은것부터 만들면서 큰거를 만들기.
@@ -147,5 +148,7 @@ module.exports = {
 
 ```ts
 import type { Config } from '@jest/types'
-const config: Config.InitialOptions = {}
+const config: Config.InitialOptions = {
+
+}
 ```

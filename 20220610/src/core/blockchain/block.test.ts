@@ -1,20 +1,24 @@
 import { Block } from '@core/blockchain/block'
+import { GENESIS } from '@core/config'
+
 describe('Block 검증', () => {
-    /**
-     * 어차핀 제네시스블럭은 하드코딩한 값이다.
-     */
-    let genesisBlock: Block = {
-        version: '1.0.0',
-        height: 0,
-        hash: '0'.repeat(64),
-        timestamp: 1231006506,
-        previousHash: '0'.repeat(64),
-        merkleRoot: '0'.repeat(64),
-        data: ['Hello Block'],
-    }
+    let newBlock: Block
+
     it('블록생성', () => {
         const data = ['Block #2']
-        const newBlock = new Block(genesisBlock)
-        console.log(newBlock)
+        // newBlock = new Block(genesisBlock, data)
+        newBlock = Block.generateBlock(GENESIS, data)
+        const newBlock2 = new Block(newBlock, data)
+    })
+
+    it('블록검증 테스트', () => {
+        // height: 10 , height: 9
+        const isVaildBlock = Block.isValidNewBlock(newBlock, GENESIS)
+
+        if (isVaildBlock.isError) {
+            console.error(isVaildBlock.error)
+            return expect(true).toBe(false)
+        }
+        expect(isVaildBlock.isError).toBe(false)
     })
 })

@@ -12,6 +12,7 @@ describe('Block 검증', () => {
         merkleRoot: '0'.repeat(64),
         data: ['Hello Block'],
     }
+    
     it('블록생성', () => {
         const data = ['Block #2']
         const newBlock = new Block(genesisBlock)

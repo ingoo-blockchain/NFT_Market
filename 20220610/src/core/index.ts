@@ -1,6 +1,5 @@
-import { a } from "@core/utils/utils";
-import hexToBianry from "hex-to-binary";
-import SHA256 from "crypto-js/sha256";
+import hexToBianry from 'hex-to-binary'
+import SHA256 from 'crypto-js/sha256'
 
 // npm install crypto-js
 
@@ -14,7 +13,7 @@ import SHA256 from "crypto-js/sha256";
 // 2 -> 0010
 
 // npm install hex-to-binary
-const hash: string = SHA256("ingoo").toString();
-const binary: string = hexToBianry(hash);
+const hash: string = SHA256('ingoo').toString()
+const binary: string = hexToBianry(hash)
 
-console.log(binary);
+console.log(binary)
