@@ -41,4 +41,29 @@ export class Chain {
                 : this.blockchain[currentLength - DIFFICULTY_ADJUSTMENT_INTERVAL]
         return adjustmentBlock
     }
+
+    isValidChain(_chain: Block[]): Failable<undefined, string> {
+        // TODO : Invaild genesis block
+
+        for (let i = 1; i < _chain.length; i++) {
+            const newBlock = _chain[i]
+            const previousBlock = _chain[i - 1]
+
+            const isVaild = Block.isValidNewBlock(newBlock, previousBlock)
+            if (isVaild.isError) return { isError: true, error: isVaild.error }
+        }
+
+        return { isError: false, value: undefined }
+    }
+
+    replaceChain(_newChain: Block[]): Failable<undefined, string> {
+        console.log(_newChain.length, this.getLength())
+        if (_newChain.length <= this.getLength()) return { isError: true, error: '블록 길이가 맞지않습니다.' }
+
+        const isVaild = this.isValidChain(_newChain)
+        if (isVaild.isError) return { isError: true, error: isVaild.error }
+
+        this.blockchain = _newChain
+        return { isError: false, value: undefined }
+    }
 }

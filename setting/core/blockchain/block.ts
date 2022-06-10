@@ -14,7 +14,6 @@ export class Block extends BlockHeader implements IBlock {
         super(_previousBlock)
         const merkleRoot = Block.getMerkleRoot<String>(_data)
         const difficulty = Block.getDifficulty(this, _adjustmentBlock)
-        console.log(difficulty)
         this.difficulty = difficulty
         this.nonce = _previousBlock.nonce
         this.hash = Block.createBlockHash(this, merkleRoot)
