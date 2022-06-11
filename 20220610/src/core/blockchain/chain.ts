@@ -20,11 +20,22 @@ export class Chain {
         return this.blockchain[this.blockchain.length - 1]
     }
 
+    public addBlock(data: string[]): Failable<Block, string> {
+        // TODO
+        const previousBlock = this.getLatestBlock()
+        const newBlock = Block.generateBlock(previousBlock, data)
+        const isVaild = Block.isValidNewBlock(newBlock, previousBlock)
+
+        if (isVaild.isError) return { isError: true, error: isVaild.error }
+
+        this.blockchain.push(newBlock)
+        return { isError: false, value: newBlock }
+    }
+
     /**
      * 생성기준으로 블럭높이가 -10 짜리 구해오기.
      */
     public getAdjustmentBlock() {
-        // 현재 마지막블럭에서 - 10 (DIFFICULTY_ADJUSTMENT_INTERVAL)
         const currentLength = this.getLength()
         const adjustmentBlock: Block =
             currentLength < DIFFICULTY_ADJUSTMENT_INTERVAL

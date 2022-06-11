@@ -4,14 +4,14 @@
 export const DIFFICULTY_ADJUSTMENT_INTERVAL: number = 10
 
 /**
- * 블럭 생성 시간 (단위 : 분)
+ * 블럭 생성 시간 10* 60 = 600
  */
 export const BLOCK_GENERATION_INTERVAL: number = 10
 
 /**
- * 블럭한개당 생성되는 시간
+ * 생성 시간 단위
  */
-export const BLOCK_GENERATION_TIME: number = 60
+export const UNIT: number = 60
 
 export const GENESIS: IBlock = {
     version: '1.0.0',

@@ -50,7 +50,7 @@ export class Block extends BlockHeader implements IBlock {
         const generateBlock = new Block(_previousBlock, _data)
         // TODO : newBlock은 마이닝이 완료된 블럭
         const newBlock = Block.findBlock(generateBlock)
-        return generateBlock
+        return newBlock
     }
 
     public static findBlock(_generateBlock: Block): Block {

@@ -1,9 +1,9 @@
 import BN from 'bn.js'
 
-export class TxIn {
+export class TxIn implements ITxIn {
     public txOutId: string
     public txOutIndex: number
-    // public signature?: Signature
+    public signature?: string
 
     constructor(_id: string, _index: number) {
         this.txOutId = _id
@@ -20,6 +20,10 @@ export class TxIn {
         const result = new Set<string>(Object.values(groups))
         if (result.size < 1) return { isError: true, error: '중복된 TxIn이 존재합니다.' }
         return { isError: false, value: undefined }
+    }
+
+    static signTxIn(): string {
+        return ''
     }
 }
 
