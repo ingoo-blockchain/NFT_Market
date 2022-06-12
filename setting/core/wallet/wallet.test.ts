@@ -7,7 +7,7 @@ describe('wallet', () => {
 
     it('Wallet 생성', () => {
         const privKey = Wallet.createPrivateKey()
-        wallet = new Wallet()
+        wallet = new Wallet(privKey)
         console.log(wallet)
     })
 })

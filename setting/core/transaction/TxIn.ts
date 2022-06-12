@@ -1,4 +1,4 @@
-import BN from 'bn.js'
+import { Wallet } from '@core/wallet/wallet'
 
 export class TxIn implements ITxIn {
     public txOutId: string
@@ -8,6 +8,29 @@ export class TxIn implements ITxIn {
     constructor(_id: string, _index: number) {
         this.txOutId = _id
         this.txOutIndex = _index
+    }
+
+    static signTxIn(_tx: ITransaction, _index: number, _wallet: Wallet, _unspentTxOuts: IUnspentTxOut[]): string {
+        // TODO : unspentTxOuts 처리필요
+        const txin: TxIn = _tx.txIns[_index]
+
+        const signature: string = Wallet.sign(_wallet.getPrivkey(), _tx.hash)
+        return signature
+    }
+
+    // 검증코드
+
+    static validTxIn(_transactions: ITransaction[]): Failable<undefined, string> {
+        const txIns: TxIn[] = _transactions.reduce((acc: TxIn[], tx: ITransaction) => {
+            if (tx.txIns instanceof Array) acc.push(...tx.txIns)
+            else acc.push(tx.txIns)
+            return acc
+        }, [])
+
+        const valid = TxIn.hasDuplicates(txIns)
+        if (valid.isError) throw new Error(valid.error)
+
+        return { isError: false, value: undefined }
     }
 
     static hasDuplicates(txIns: TxIn[]): Failable<undefined, string> {
@@ -21,13 +44,4 @@ export class TxIn implements ITxIn {
         if (result.size < 1) return { isError: true, error: '중복된 TxIn이 존재합니다.' }
         return { isError: false, value: undefined }
     }
-
-    static signTxIn(): string {
-        return ''
-    }
 }
-
-// export class Signature {
-//     public r: BN
-//     public s: BN
-// }

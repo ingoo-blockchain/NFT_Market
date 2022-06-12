@@ -14,7 +14,7 @@ declare interface ITransaction {
     txOuts: ITxOut[]
 }
 
-declare interface IUspentTxOut {
+declare interface IUnspentTxOut {
     txOutId: string
     txOutIndex: number
     address: string

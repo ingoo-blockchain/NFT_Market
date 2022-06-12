@@ -1,1 +1,1 @@
-export class UnspentTxOut {}
+describe('UnspentTxOut', () => {})

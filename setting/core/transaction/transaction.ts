@@ -1,6 +1,8 @@
 import { TxOut } from './TxOut'
 import { TxIn } from './TxIn'
 import { SHA256 } from 'crypto-js'
+import { UnspentTxOut } from './UnspentTxOut'
+
 export class Transaction implements ITransaction {
     public hash: string
     public txIns: ITxIn[]
@@ -16,7 +18,7 @@ export class Transaction implements ITransaction {
         _sender: string,
         _recipient: string,
         _amount: number,
-        _unspentTxOuts: IUspentTxOut[],
+        _unspentTxOuts: IUnspentTxOut[],
     ): Transaction {
         const transaction = new Transaction()
 
@@ -45,5 +47,30 @@ export class Transaction implements ITransaction {
             else acc += value.toString()
             return acc
         }, '')
+    }
+
+    static processTransaction(_transaction: Transaction[], _unspentTxOuts: IUnspentTxOut[], blockHeight: number) {
+        try {
+            // Transaction.validateBlockTransaction(_transaction, _unspentTxOuts, blockHeight)
+            // TODO : UnspentTxOuts Update넣기.
+
+            UnspentTxOut.updateUnspentTxOuts(_transaction, _unspentTxOuts)
+        } catch (e) {
+            if (e instanceof Error) console.error(e.message)
+        }
+    }
+
+    // Transaction 검증
+    static validateBlockTransaction(
+        _transactions: Transaction[],
+        _unspentTxOuts: IUnspentTxOut[],
+        blockHeight: number,
+    ) {
+        /**
+         * TODO :
+         * 1. 코인베이스 검사
+         * 2. TxIn 검사
+         * 3. 코인베이스 제외한 전체 트랜잭션 검사
+         */
     }
 }

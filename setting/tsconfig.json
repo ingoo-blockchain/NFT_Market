@@ -13,5 +13,15 @@
             "*": ["@types/*"]
         }
     },
-    "ts-node": {}
+    "ts-node": {
+        "files": true,
+        "compilerOptions": {
+            "module": "commonjs",
+            "moduleResolution": "node",
+            "paths": {
+                "@core/*": ["core/*"],
+                "*": ["@types/*"]
+            }
+        }
+    }
 }
