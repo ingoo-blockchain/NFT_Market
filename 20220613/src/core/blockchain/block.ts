@@ -1,7 +1,8 @@
 import { SHA256 } from 'crypto-js'
 import merkle from 'merkle'
 import { BlockHeader } from './blockHeader'
-import { GENESIS } from '@core/config'
+import hexToBinary from 'hex-to-binary'
+import { BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL, GENESIS, UNIT } from '@core/config'
 /**
  * 객체를 만들기 위함.
  * constructor() 객체 만들려고
@@ -19,7 +20,7 @@ export class Block extends BlockHeader implements IBlock {
     public difficulty: number
     public data: string[]
 
-    constructor(_previousBlock: Block, _data: string[]) {
+    constructor(_previousBlock: Block, _data: string[], _adjustmentBlock: Block = _previousBlock) {
         super(_previousBlock)
 
         const merkleRoot = Block.getMerkleRoot(_data)
@@ -27,7 +28,7 @@ export class Block extends BlockHeader implements IBlock {
         this.merkleRoot = merkleRoot
         this.hash = Block.createBlockHash(this)
         this.nonce = 0
-        this.difficulty = 0
+        this.difficulty = Block.getDifficulty(this, _adjustmentBlock, _previousBlock)
         this.data = _data
     }
 
@@ -41,13 +42,13 @@ export class Block extends BlockHeader implements IBlock {
     }
 
     public static createBlockHash(_block: Block): string {
-        const { version, timestamp, merkleRoot, previousHash, height } = _block
-        const values: string = `${version}${timestamp}${merkleRoot}${previousHash}${height}`
+        const { version, timestamp, merkleRoot, previousHash, height, difficulty, nonce } = _block
+        const values: string = `${version}${timestamp}${merkleRoot}${previousHash}${height}${difficulty}${nonce}`
         return SHA256(values).toString()
     }
 
-    public static generateBlock(_previousBlock: Block, _data: string[]): Block {
-        const generateBlock = new Block(_previousBlock, _data)
+    public static generateBlock(_previousBlock: Block, _data: string[], _adjustmentBlock: Block): Block {
+        const generateBlock = new Block(_previousBlock, _data, _adjustmentBlock)
         // TODO : newBlock은 마이닝이 완료된 블럭
         const newBlock = Block.findBlock(generateBlock)
         return newBlock
@@ -55,7 +56,37 @@ export class Block extends BlockHeader implements IBlock {
 
     public static findBlock(_generateBlock: Block): Block {
         // TODO : 마이닝 작업 코드를 넣어야함.
-        return _generateBlock
+        // _generateBlock Block이 담김
+        // hash
+        let hash: string
+        let nonce: number = 0
+        while (true) {
+            nonce++
+            _generateBlock.nonce = nonce
+            hash = Block.createBlockHash(_generateBlock)
+            const binary: string = hexToBinary(hash) // 0100101001010101010
+            const result: boolean = binary.startsWith('0'.repeat(_generateBlock.difficulty))
+            if (result) {
+                _generateBlock.hash = hash
+                return _generateBlock
+            }
+        }
+    }
+
+    public static getDifficulty(_newBlock: Block, _adjustmentBlock: Block, _previousBlock: Block): number {
+        console.log(_newBlock, _adjustmentBlock)
+        if (_newBlock.height < 9) return 0
+        if (_newBlock.height < 19) return 1
+        if (_newBlock.height % DIFFICULTY_ADJUSTMENT_INTERVAL !== 0) return _previousBlock.difficulty
+
+        const timeTaken: number = _newBlock.timestamp - _adjustmentBlock.timestamp // 18000
+        const timeExpected: number = UNIT * BLOCK_GENERATION_INTERVAL * DIFFICULTY_ADJUSTMENT_INTERVAL // 6000
+
+        //실제 생성시간   예상시간
+        if (timeTaken < timeExpected / 2) return _adjustmentBlock.difficulty + 1
+        else if (timeTaken > timeExpected * 2) return _adjustmentBlock.difficulty - 1
+
+        return _adjustmentBlock.difficulty
     }
 
     static isValidNewBlock(_newBlock: Block, _previousBlock: Block): Failable<Block, string> {

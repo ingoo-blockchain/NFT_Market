@@ -36,6 +36,7 @@ export class Block extends BlockHeader implements IBlock {
     }
 
     static generateBlock(_previousBlock: Block, data: string[], _adjustmentBlock: Block = _previousBlock): Block {
+        console.log(_previousBlock, _adjustmentBlock)
         const generateBlock = new Block(_previousBlock, data, _adjustmentBlock)
         const newBlock = Block.findBlock(generateBlock)
         const isValid = Block.isValidNewBlock(newBlock, _previousBlock)

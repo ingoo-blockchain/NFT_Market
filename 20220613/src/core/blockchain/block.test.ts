@@ -7,8 +7,7 @@ describe('Block 검증', () => {
     it('블록생성', () => {
         const data = ['Block #2']
         // newBlock = new Block(genesisBlock, data)
-        newBlock = Block.generateBlock(GENESIS, data)
-        const newBlock2 = new Block(newBlock, data)
+        newBlock = Block.generateBlock(GENESIS, data, GENESIS)
     })
 
     it('블록검증 테스트', () => {
@@ -20,5 +19,9 @@ describe('Block 검증', () => {
             return expect(true).toBe(false)
         }
         expect(isVaildBlock.isError).toBe(false)
+    })
+
+    it('블록난이도 가져오기 테스트', () => {
+        const data = ['hello world']
     })
 })

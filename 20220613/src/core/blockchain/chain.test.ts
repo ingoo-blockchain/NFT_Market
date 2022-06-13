@@ -16,7 +16,7 @@ describe('Chain 함수체크', () => {
     })
 
     it('addBlock 함수체크', () => {
-        for (let i = 1; i <= 20; i++) {
+        for (let i = 1; i <= 500; i++) {
             node.addBlock([`Block #${i}`])
         }
 

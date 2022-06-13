@@ -21,9 +21,13 @@ export class Chain {
     }
 
     public addBlock(data: string[]): Failable<Block, string> {
-        // TODO
+        // TODO : 내가 앞으로 생성할블록의 높이값을 가져올수있는가?
+        // 현재높이값, -  block interval = 음수값
+        // 난이도를 구해야함.
+        // 생성시간을 구하는것.
         const previousBlock = this.getLatestBlock()
-        const newBlock = Block.generateBlock(previousBlock, data)
+        const adjustmentBlock: Block = this.getAdjustmentBlock() // -10 Block 구함
+        const newBlock = Block.generateBlock(previousBlock, data, adjustmentBlock)
         const isVaild = Block.isValidNewBlock(newBlock, previousBlock)
 
         if (isVaild.isError) return { isError: true, error: isVaild.error }
@@ -36,11 +40,11 @@ export class Chain {
      * 생성기준으로 블럭높이가 -10 짜리 구해오기.
      */
     public getAdjustmentBlock() {
-        const currentLength = this.getLength()
+        const currentLength = this.getLength() // 1
         const adjustmentBlock: Block =
             currentLength < DIFFICULTY_ADJUSTMENT_INTERVAL
                 ? Block.getGENESIS()
                 : this.blockchain[currentLength - DIFFICULTY_ADJUSTMENT_INTERVAL]
-        return adjustmentBlock
+        return adjustmentBlock // 블럭자체를 반환
     }
 }

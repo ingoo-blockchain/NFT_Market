@@ -1,23 +1,13 @@
 import { Chain } from '@core/blockchain/chain'
 import { WebSocket } from 'ws'
 
-enum MessageType {
-    latest_block = 0, // 최신 블록 가져오기
-    all_block = 1, // 전체 블록 가져오기
-    response_chain = 2, // 체인받기 - 블록검증
-}
-
-interface Message {
-    type: MessageType
-    data: any
-}
-
-export class P2PServer {
-    public blockchain: Chain
+export class P2PServer extends Chain {
     public sockets: WebSocket[]
+    public my: WebSocket | null
 
     constructor(_blockchain: Chain) {
-        this.blockchain = _blockchain
+        super()
+        this.my = null
         this.sockets = []
     }
 
@@ -29,6 +19,7 @@ export class P2PServer {
         const server = new WebSocket.Server({ port })
         server.on('connection', socket => {
             console.log(` socket connected port : ${port} `)
+            this.my = socket
             this.connectSocket(socket)
         })
     }
@@ -37,6 +28,11 @@ export class P2PServer {
         this.sockets.push(socket)
         this.messageHandler(socket)
         this.errorHandler(socket)
+        const data: Message = {
+            type: MessageType.latest_block,
+            data: null,
+        }
+        this.send(socket)(MessageType.latest_block, data)
     }
 
     messageHandler(socket: WebSocket): void {
@@ -48,15 +44,17 @@ export class P2PServer {
             switch (message.type) {
                 case MessageType.latest_block:
                     console.log(MessageType.latest_block)
-                    send(MessageType.all_block, [this.blockchain.getLatestBlock()])
+                    send(MessageType.all_block, [this.getLatestBlock()])
                     break
                 case MessageType.all_block:
                     console.log(MessageType.all_block)
-                    send(MessageType.response_chain, this.blockchain.getChain())
+                    send(MessageType.response_chain, this.getChain())
                     break
                 case MessageType.response_chain:
                     console.log(MessageType.response_chain)
-                    console.log(message.data)
+                    const receivedChain: IBlock[] | null = P2PServer.dataParse<IBlock[]>(message.data)
+                    if (receivedChain === null) break
+                    this.handleChainResponse(receivedChain)
                     break
             }
         }
@@ -94,8 +92,23 @@ export class P2PServer {
         })
     }
 
+    handleChainResponse(receivedChain: Chain) {
+        const isVaildChain = this.recivedChain(receivedChain.getChain())
+        if (isVaildChain.isError) throw new Error(isVaildChain.error)
+
+        switch (isVaildChain.value?.type) {
+            case MessageType.latest_block:
+                this.broadcast(isVaildChain.value)
+                break
+        }
+    }
+
+    broadcast(message: Message): void {
+        this.sockets.forEach(socket => this.send(socket)(message.type, message.data))
+    }
+
     close() {
-        process.exit(1)
+        this.my?.close()
     }
 
     static dataParse<T>(data: string): T | null {
