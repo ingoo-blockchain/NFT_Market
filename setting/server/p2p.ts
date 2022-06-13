@@ -92,8 +92,8 @@ export class P2PServer extends Chain {
         })
     }
 
-    handleChainResponse(receivedChain: Chain) {
-        const isVaildChain = this.recivedChain(receivedChain.getChain())
+    handleChainResponse(receivedChain: IBlock[]) {
+        const isVaildChain = this.recivedChain(receivedChain)
         if (isVaildChain.isError) throw new Error(isVaildChain.error)
 
         switch (isVaildChain.value?.type) {
