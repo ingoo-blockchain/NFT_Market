@@ -2,6 +2,7 @@ import { TxOut } from './TxOut'
 import { TxIn } from './TxIn'
 import { SHA256 } from 'crypto-js'
 import { UnspentTxOut } from './UnspentTxOut'
+import { COINBASE_AMOUNT } from '@core/config'
 
 export class Transaction implements ITransaction {
     public hash: string
@@ -58,6 +59,17 @@ export class Transaction implements ITransaction {
         } catch (e) {
             if (e instanceof Error) console.error(e.message)
         }
+    }
+
+    static getCoinbaseTransaction(_pubkey: string, _blockHeight: number): Transaction {
+        const tx = new Transaction()
+        const txIn: TxIn = new TxIn('', _blockHeight)
+        const txOut: TxOut = new TxOut(_pubkey, COINBASE_AMOUNT)
+
+        tx.txIns = [txIn]
+        tx.txOuts = [txOut]
+        tx.hash = this.createTransactionHash(tx)
+        return tx
     }
 
     // Transaction 검증

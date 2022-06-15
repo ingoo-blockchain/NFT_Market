@@ -1,11 +1,12 @@
 import { Chain } from '@core/blockchain/chain'
 import { WebSocket } from 'ws'
+import { Message, MessageType } from '../@types/p2p'
 
 export class P2PServer extends Chain {
     public sockets: WebSocket[]
     public my: WebSocket | null
 
-    constructor(_blockchain: Chain) {
+    constructor() {
         super()
         this.my = null
         this.sockets = []
@@ -15,7 +16,7 @@ export class P2PServer extends Chain {
         return this.sockets
     }
 
-    listen(port: number = 7545): void {
+    listen(port: any = 7545): void {
         const server = new WebSocket.Server({ port })
         server.on('connection', socket => {
             console.log(` socket connected port : ${port} `)
@@ -28,17 +29,12 @@ export class P2PServer extends Chain {
         this.sockets.push(socket)
         this.messageHandler(socket)
         this.errorHandler(socket)
-        const data: Message = {
-            type: MessageType.latest_block,
-            data: null,
-        }
-        this.send(socket)(MessageType.latest_block, data)
+        this.send(socket)(MessageType.latest_block, {})
     }
 
     messageHandler(socket: WebSocket): void {
         const message = (data: string) => {
-            const message: Message | null = P2PServer.dataParse<Message>(data)
-            if (message === null) return
+            const message: Message = P2PServer.dataParse<Message>(data)
 
             const send = this.send(socket)
             switch (message.type) {
@@ -51,10 +47,14 @@ export class P2PServer extends Chain {
                     send(MessageType.response_chain, this.getChain())
                     break
                 case MessageType.response_chain:
-                    console.log(MessageType.response_chain)
-                    const receivedChain: IBlock[] | null = P2PServer.dataParse<IBlock[]>(message.data)
-                    if (receivedChain === null) break
-                    this.handleChainResponse(receivedChain)
+                    try {
+                        console.log(MessageType.response_chain)
+                        const receivedChain = message.data
+                        if (receivedChain === null) break
+                        this.handleChainResponse(receivedChain)
+                    } catch (e) {
+                        if (e instanceof Error) console.log(e.message)
+                    }
                     break
             }
         }
@@ -111,12 +111,8 @@ export class P2PServer extends Chain {
         this.my?.close()
     }
 
-    static dataParse<T>(data: string): T | null {
-        try {
-            return JSON.parse(Buffer.from(data).toString())
-        } catch (e) {
-            return null
-        }
+    static dataParse<T>(data: string): T {
+        return JSON.parse(Buffer.from(data).toString())
     }
 
     static createAction(type: MessageType, data: any): string {

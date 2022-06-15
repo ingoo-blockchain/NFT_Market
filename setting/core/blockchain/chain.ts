@@ -1,5 +1,6 @@
 import { Block } from '@core/blockchain/block'
 import { BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL, GENESIS } from '@core/config'
+import { MessageType, Message } from '../../@types/p2p'
 
 export class Chain {
     private blockchain: Block[]
@@ -93,7 +94,6 @@ export class Chain {
     }
 
     replaceChain(_newChain: Block[]): Failable<undefined, string> {
-        console.log(_newChain.length, this.getLength())
         if (_newChain.length <= this.getLength()) return { isError: true, error: '블록 길이가 맞지않습니다.' }
 
         const isVaild = this.isValidChain(_newChain)

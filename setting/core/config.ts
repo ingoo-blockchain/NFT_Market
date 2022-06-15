@@ -17,7 +17,7 @@ export const GENESIS: IBlock = {
     version: '1.0.0',
     height: 0,
     hash: '0'.repeat(64),
-    previousHash: '0'.repeat(64),
+    previousHash: '10'.repeat(63),
     timestamp: 1231006506,
     merkleRoot: 'FFA..',
     difficulty: 0,

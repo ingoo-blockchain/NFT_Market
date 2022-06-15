@@ -2,7 +2,7 @@ import { Block } from '@core/blockchain/block'
 import { DIFFICULTY_ADJUSTMENT_INTERVAL } from '@core/config'
 
 export class Chain {
-    public blockchain: Block[]
+    private blockchain: Block[]
 
     constructor() {
         this.blockchain = [Block.getGENESIS()]
@@ -35,6 +35,8 @@ export class Chain {
         this.blockchain.push(newBlock)
         return { isError: false, value: newBlock }
     }
+
+    // 체인검증하는
 
     /**
      * 생성기준으로 블럭높이가 -10 짜리 구해오기.
