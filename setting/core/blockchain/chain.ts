@@ -60,10 +60,12 @@ export class Chain {
     recivedChain(receivedChain: Block[]): Failable<Message | null, string> {
         const latestReceivedBlock: Block = receivedChain[receivedChain.length - 1]
         const latestBlock: Block = this.getLatestBlock()
+
         const actions = (type: MessageType, data: any): Message => ({
             type,
             data,
         })
+
         if (latestReceivedBlock.height < latestBlock.height) {
             return { isError: true, error: '1' }
         }

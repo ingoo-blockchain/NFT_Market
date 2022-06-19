@@ -12,7 +12,7 @@ const ws = new P2PServer()
 app.use(express.json())
 
 app.get('/', (req, res) => {
-    res.send('사..살려줘..ㅇ..안저..ㄴ..이..짜..ㅇ..받..ㄷ..!')
+    res.send(',,')
 })
 
 app.get('/blocks', (req, res) => {
@@ -43,6 +43,14 @@ app.post('/mineTrasnaction', (req, res) => {
     const address = req.body.address
     const amount = req.body.amount
     // const resp =
+})
+
+app.post('/sendTransaction', (req, res) => {
+    // sender : publicKey
+    // recived : adddress
+    try {
+        const { sender, received, amount, signature } = req.body
+    } catch (e) {}
 })
 
 app.listen(HTTP_PORT, () => {
