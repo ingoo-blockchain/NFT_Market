@@ -2,6 +2,8 @@ import { BlockChain } from '@core/index'
 import { P2PServer, Message, MessageType } from './src/serve/p2p'
 import peers from './peer.json'
 import express from 'express'
+import { ReceviedTx } from '@core/wallet/wallet'
+import { Wallet } from '@core/wallet/wallet'
 
 const app = express()
 const bc = new BlockChain()
@@ -56,6 +58,29 @@ app.get('/addPeers', (req, res) => {
 app.get('/peers', (req, res) => {
     const sockets = ws.getSockets().map((s: any) => s._socket.remoteAddress + ':' + s._socket.remotePort)
     res.json(sockets)
+})
+
+app.post('/sendTransaction', (req, res) => {
+    /* blockchain server
+    {
+        sender: '0376f781b427b7ff84f39bb60b10187335f40af237c8fe4764bdabbf6f34c340ff',
+        received: '90efc23505a72d5a7062918585f75994f8d38df6',
+        amount: 10,
+        signature: Signature {
+            r: BN { negative: 0, words: [Array], length: 10, red: null },
+            s: BN { negative: 0, words: [Array], length: 10, red: null },
+            recoveryParam: 1
+        }
+    }
+    */
+    try {
+        const receivedTx: ReceviedTx = req.body
+        Wallet.sendTransaction(receivedTx)
+    } catch (e) {
+        if (e instanceof Error) console.error(e.message)
+    }
+
+    res.json([])
 })
 
 app.listen(3000, () => {
