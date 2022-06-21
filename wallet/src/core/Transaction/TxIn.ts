@@ -15,7 +15,7 @@ export class TxIn implements ITxIn {
         // const txin: TxIn = _tx.txIns[_index]
 
         // const signature: string = Wallet.sign(_wallet.getPrivkey(), _tx.hash)
-        return signature
+        return ''
     }
 
     // 검증코드
