@@ -4,14 +4,17 @@ import { Transaction } from '@core/transaction/transaction'
 import { TxIn } from '@core/transaction/txin'
 import { TxOut } from '@core/transaction/txout'
 import { unspentTxOut } from '@core/transaction/unspentTxOut'
+import { readlink } from 'fs'
 
 export class Chain {
     private blockchain: Block[]
     private unspentTxOuts: unspentTxOut[]
+    private transactionPool: ITransaction[]
 
     constructor() {
         this.blockchain = [Block.getGENESIS()]
         this.unspentTxOuts = []
+        this.transactionPool = []
     }
 
     public getUnspentTxOuts(): unspentTxOut[] {
@@ -34,6 +37,40 @@ export class Chain {
         return this.blockchain[this.blockchain.length - 1]
     }
 
+    public getTransactionPool(): ITransaction[] {
+        return this.transactionPool
+    }
+
+    public appendTransactionPool(_Transaction: ITransaction): void {
+        this.transactionPool.push(_Transaction)
+    }
+
+    public updateTransactionPool(_newBlock: IBlock): void {
+        let txPool: ITransaction[] = this.getTransactionPool()
+        _newBlock.data.forEach((tx: ITransaction) => {
+            txPool = txPool.filter((txp) => {
+                txp.hash !== tx.hash
+            })
+        })
+
+        this.transactionPool = txPool
+
+        // for (const tx of txPool) {
+        //     for (const txin of tx.txIns) {
+        //         const foundTxIn = unspentTxOuts.find((utxo: unspentTxOut) => {
+        //             return utxo.txOutId === txin.txOutId && utxo.txOutIndex === txin.txOutIndex
+        //         })
+
+        //         if (!foundTxIn) {
+        //             this.transactionPool = this.transactionPool.filter((_tx) => {
+        //                 return JSON.stringify(_tx) !== JSON.stringify(tx)
+        //             })
+        //             break
+        //         }
+        //     }
+        // }
+    }
+
     public miningBlock(_account: string): Failable<Block, string> {
         // TODO : Transaction 만들는 코드를넣넣고.
 
@@ -43,7 +80,7 @@ export class Chain {
         const utxo = transaction.createUTXO()
         this.appendUTXO(utxo)
         // TODO : addBlock
-        return this.addBlock([transaction])
+        return this.addBlock([transaction, ...this.getTransactionPool()])
     }
 
     public addBlock(data: ITransaction[]): Failable<Block, string> {
@@ -59,6 +96,15 @@ export class Chain {
         if (isVaild.isError) return { isError: true, error: isVaild.error }
 
         this.blockchain.push(newBlock)
+        // block.data.trasnactions
+        // trasnactionpool
+        // UTXO
+        // updateTransactionPool()
+        // newBlock.data.forEach((_tx) => {
+        //     this.updateUTXO(_tx)
+        // })
+
+        this.updateTransactionPool(newBlock)
         return { isError: false, value: newBlock }
     }
 
@@ -67,6 +113,12 @@ export class Chain {
         if (isVaild.isError) return { isError: true, error: isVaild.error }
 
         this.blockchain.push(_receviedBlock)
+
+        _receviedBlock.data.forEach((tx) => {
+            this.updateUTXO(tx)
+        })
+        this.updateTransactionPool(_receviedBlock)
+
         return { isError: false, value: undefined }
     }
 
@@ -84,24 +136,23 @@ export class Chain {
         return { isError: false, value: undefined }
     }
 
-    updateUTXO(tx: Transaction): unspentTxOut[] {
+    updateUTXO(tx: ITransaction): void {
+        //
         const unspentTxOuts: unspentTxOut[] = this.getUnspentTxOuts()
 
         const newUnspentTxOuts = tx.txOuts.map((txout, index) => {
             return new unspentTxOut(tx.hash, index, txout.account, txout.amount)
         })
 
-        const result = unspentTxOuts
-            .filter((_v) => {
-                const bool = tx.txIns.find((v) => {
-                    return _v.txOutId === v.txOutId && _v.txOutIndex === v.txOutIndex
+        this.unspentTxOuts = unspentTxOuts
+            .filter((utxo: unspentTxOut) => {
+                const bool = tx.txIns.find((txIn: TxIn) => {
+                    return utxo.txOutId === txIn.txOutId && utxo.txOutIndex === txIn.txOutIndex
                 })
 
                 return !bool
             })
             .concat(newUnspentTxOuts)
-
-        return result
     }
 
     replaceChain(receivedChain: Block[]): Failable<undefined, string> {
@@ -126,6 +177,16 @@ export class Chain {
 
         // 체인을 바꿔주는 코드를 작성하면됨.
         this.blockchain = receivedChain
+
+        // UTXO
+
+        // POOl
+        this.blockchain.forEach((_block: IBlock) => {
+            this.updateTransactionPool(_block)
+            _block.data.forEach((_tx) => {
+                this.updateUTXO(_tx)
+            })
+        })
 
         return { isError: false, value: undefined }
     }
