@@ -84,34 +84,24 @@ export class Chain {
         return { isError: false, value: undefined }
     }
 
-    updateUTXO(tx: Transaction) {
-        const consumedTxOuts = tx.txIns
-        const newUnspentTxOuts = tx.txOuts
+    updateUTXO(tx: Transaction): unspentTxOut[] {
         const unspentTxOuts: unspentTxOut[] = this.getUnspentTxOuts()
 
-        const consumed = tx.txIns.map((txin) => {
-            return new unspentTxOut(txin.txOutId, txin.txOutIndex, '', 0)
+        const newUnspentTxOuts = tx.txOuts.map((txout, index) => {
+            return new unspentTxOut(tx.hash, index, txout.account, txout.amount)
         })
 
-        const consumedTx = unspentTxOuts.filter((utxo) => consumed.includes(utxo))
+        const result = unspentTxOuts
+            .filter((_v) => {
+                const bool = tx.txIns.find((v) => {
+                    return _v.txOutId === v.txOutId && _v.txOutIndex === v.txOutIndex
+                })
 
-        // const consumedTxOuts = _tx.txIns
-        // const newUnspentTxOuts = _tx.txOuts
+                return !bool
+            })
+            .concat(newUnspentTxOuts)
 
-        // let utxo = this.getUnspentTxOuts()
-
-        // consumedTxOuts.reduce((acc: unspentTxOut[], _v) => {
-        //     utxo = acc.filter((v) => {
-        //         console.log(v, _v)
-        //         return v.txOutId === _v.txOutId
-        //     })
-
-        //     return utxo
-        // }, utxo)
-
-        // console.log(utxo)
-        // return utxo
-        // .filter((utxo: unspentTxOut) => {})
+        return result
     }
 
     replaceChain(receivedChain: Block[]): Failable<undefined, string> {
