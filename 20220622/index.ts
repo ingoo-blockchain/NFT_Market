@@ -98,6 +98,12 @@ app.post('/sendTransaction', (req, res) => {
         // txouts
         ws.appendTransactionPool(tx)
         ws.updateUTXO(tx)
+        // 브로드캐스트
+        const message: Message = {
+            type: MessageType.receivedTx,
+            payload: tx,
+        }
+        ws.broadcast(message)
         // utxo:[] - txins
         // utxos:[] + txouts
         // UTXO내용을 최신화하는 함수를 ( 트랜잭션 )

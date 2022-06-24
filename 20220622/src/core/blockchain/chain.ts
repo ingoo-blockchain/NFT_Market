@@ -4,7 +4,6 @@ import { Transaction } from '@core/transaction/transaction'
 import { TxIn } from '@core/transaction/txin'
 import { TxOut } from '@core/transaction/txout'
 import { unspentTxOut } from '@core/transaction/unspentTxOut'
-import { readlink } from 'fs'
 
 export class Chain {
     private blockchain: Block[]
@@ -54,21 +53,6 @@ export class Chain {
         })
 
         this.transactionPool = txPool
-
-        // for (const tx of txPool) {
-        //     for (const txin of tx.txIns) {
-        //         const foundTxIn = unspentTxOuts.find((utxo: unspentTxOut) => {
-        //             return utxo.txOutId === txin.txOutId && utxo.txOutIndex === txin.txOutIndex
-        //         })
-
-        //         if (!foundTxIn) {
-        //             this.transactionPool = this.transactionPool.filter((_tx) => {
-        //                 return JSON.stringify(_tx) !== JSON.stringify(tx)
-        //             })
-        //             break
-        //         }
-        //     }
-        // }
     }
 
     public miningBlock(_account: string): Failable<Block, string> {
@@ -77,8 +61,7 @@ export class Chain {
         const txin: ITxIn = new TxIn('', this.getLatestBlock().height + 1)
         const txout: ITxOut = new TxOut(_account, 50)
         const transaction: Transaction = new Transaction([txin], [txout])
-        const utxo = transaction.createUTXO()
-        this.appendUTXO(utxo)
+
         // TODO : addBlock
         return this.addBlock([transaction, ...this.getTransactionPool()])
     }
@@ -96,14 +79,9 @@ export class Chain {
         if (isVaild.isError) return { isError: true, error: isVaild.error }
 
         this.blockchain.push(newBlock)
-        // block.data.trasnactions
-        // trasnactionpool
-        // UTXO
-        // updateTransactionPool()
-        // newBlock.data.forEach((_tx) => {
-        //     this.updateUTXO(_tx)
-        // })
-
+        newBlock.data.forEach((_tx: ITransaction) => {
+            this.updateUTXO(_tx)
+        })
         this.updateTransactionPool(newBlock)
         return { isError: false, value: newBlock }
     }
@@ -137,14 +115,13 @@ export class Chain {
     }
 
     updateUTXO(tx: ITransaction): void {
-        //
         const unspentTxOuts: unspentTxOut[] = this.getUnspentTxOuts()
 
         const newUnspentTxOuts = tx.txOuts.map((txout, index) => {
             return new unspentTxOut(tx.hash, index, txout.account, txout.amount)
         })
 
-        this.unspentTxOuts = unspentTxOuts
+        const tmp = unspentTxOuts
             .filter((utxo: unspentTxOut) => {
                 const bool = tx.txIns.find((txIn: TxIn) => {
                     return utxo.txOutId === txIn.txOutId && utxo.txOutIndex === txIn.txOutIndex
@@ -153,6 +130,21 @@ export class Chain {
                 return !bool
             })
             .concat(newUnspentTxOuts)
+
+        console.log('origin utxo :', this.unspentTxOuts)
+        console.log(' newUnspentTxOuts : ', newUnspentTxOuts)
+        console.log(' result utxo :  ', tmp)
+
+        let unspentTmp: unspentTxOut[] = []
+        const result = tmp.reduce((acc, utxo) => {
+            const find = acc.find(({ txOutId, txOutIndex }) => {
+                return txOutId === utxo.txOutId && txOutIndex === utxo.txOutIndex
+            })
+            if (!find) acc.push(utxo)
+            return acc
+        }, unspentTmp)
+
+        this.unspentTxOuts = result
     }
 
     replaceChain(receivedChain: Block[]): Failable<undefined, string> {
