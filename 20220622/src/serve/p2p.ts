@@ -103,13 +103,13 @@ export class P2PServer extends Chain {
                     if (!withTransaction) {
                         // 받은 트랜잭션 내용이 내 트랜잭션풀에 없다면.
                         this.appendTransactionPool(recivedTransaction)
-                    }
 
-                    const message: Message = {
-                        type: MessageType.receivedTx,
-                        payload: recivedTransaction,
+                        const message: Message = {
+                            type: MessageType.receivedTx,
+                            payload: recivedTransaction,
+                        }
+                        this.broadcast(message)
                     }
-                    this.broadcast(message)
 
                     break
                 }
