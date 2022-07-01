@@ -75,4 +75,14 @@ describe('web3 테스트코드', () => {
         console.log('sender balance : ', Senderbalance / 10 ** 18)
         console.log('Received balance : ', Receivedbalance / 10 ** 18)
     })
+
+    it('가스 사용량 확인하기', async () => {
+        // 가스사용량 21004
+        // 21000 + 4
+        // 가스사용량 21004 // 아반떼에 기름을 얼마나 넣을거니? 10L
+        // 가스가격 1 = 1gwei // 1L = 2000
+        // 가스최대치 6721975 // 아반떼 총 넣을수있는 기름통 크기가 55L
+        // 1 Transaction 당 얼마의 값이 나가는지
+        // 1 - total_price (총사용가스량 * 가스가격) == 수수료값만
+    })
 })
